@@ -1,8 +1,8 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, NavLink } from "react-router-dom";
 import styles from "./Header.module.scss";
-import { FaShoppingCart } from "react-icons/fa";
-import { RxHamburgerMenu } from "react-icons/rx"
+import { FaShoppingCart, FaTimes } from "react-icons/fa";
+import { RxHamburgerMenu } from "react-icons/rx";
 
 const logo = (
   <div className={styles.logo}>
@@ -24,35 +24,62 @@ const cart = (
 );
 
 const Header = () => {
+  const [showMenu, setShowMenu] = useState(false);
+
+  const toggleMenu = () => {
+    setShowMenu(!showMenu);
+  };
+  const hideMenu = () => {
+    setShowMenu(false);
+  };
+
+  const activeLink = ({isActive}) => (isActive ? `${styles.active}` : "")
+
   return (
     <header>
       <div className={styles.header}>
         {logo}
-        <nav>
-          <ul>
-            <li>
-              <Link to="/">Home</Link>
+
+        {/* if the navbar state (showMenu) is true the nav should have a className of "show-nav" else the nav bar should have a className of "hide-nav" */}
+        <nav
+          className={
+            showMenu ? `${styles["show-nav"]}` : `${styles["hide-nav"]}`
+          }
+        >
+          <div
+            className={
+              showMenu
+                ? `${styles["nav-wrapper"]} ${styles["show-nav-wrapper"]}`
+                : `${styles["nav-wrapper"]}`
+            }
+            onClick={hideMenu}
+           ></div>
+          <ul onClick={hideMenu }>
+            <li className={styles["logo-mobile"]}>
+                {logo}
+                <FaTimes size={22} color="#fff" onClick={hideMenu}/>
             </li>
             <li>
-              <Link to="/">About</Link>
+              <NavLink to="/" className={activeLink}>Home</NavLink>
             </li>
             <li>
-              <Link to="/">Contact Us</Link>
+              <NavLink to="/contact" className={activeLink}>Contact Us</NavLink>
             </li>
           </ul>
-          <div className={styles["header-right"]}>
+          <div className={styles["header-right"]} onClick={hideMenu}>
             <span className={styles.links}>
-              <Link to="/login"> Login </Link>
-              <Link to="/register"> Register </Link>
-              <Link to="/orders-history"> My Orders </Link>
+              <NavLink to="/login" className={activeLink}> Login </NavLink>
+              <NavLink to="/register" className={activeLink}> Register </NavLink>
+              <NavLink to="/orders-history" className={activeLink}> My Orders </NavLink>
             </span>
             {cart}
           </div>
         </nav>
 
+        {/* hamburger icon */}
         <div className={styles["menu-icon"]}>
           {cart}
-          <RxHamburgerMenu size={28}/>
+          <RxHamburgerMenu size={28} onClick={toggleMenu} />
         </div>
       </div>
     </header>
