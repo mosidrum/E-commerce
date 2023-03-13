@@ -1,8 +1,13 @@
-import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import styles from "./Header.module.scss";
-import { FaShoppingCart, FaTimes } from "react-icons/fa";
+import { FaShoppingCart, FaTimes, FaUserCircle } from "react-icons/fa";
 import { RxHamburgerMenu } from "react-icons/rx";
+import { auth } from "../../firebase/Config";
+import Loader from "../loader/Loader";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { toast } from "react-toastify";
+
 
 const logo = (
   <div className={styles.logo}>
@@ -25,6 +30,8 @@ const cart = (
 
 const Header = () => {
   const [showMenu, setShowMenu] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [displayName, setDisplayName] = useState('');
 
   const toggleMenu = () => {
     setShowMenu(!showMenu);
@@ -34,8 +41,36 @@ const Header = () => {
   };
 
   const activeLink = ({isActive}) => (isActive ? `${styles.active}` : "")
+  
+  const navigate = useNavigate();
+
+  const logoutUser = () => {
+    setIsLoading(true);
+    signOut(auth).then(() => {
+      toast.success('Logout successfully!');
+      setIsLoading(false);
+      navigate('/');
+    }).catch((error) => {
+      toast.error(error.message)
+    });
+  };
+
+    // Monitor the current signed in user
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const uid = user.uid;
+        console.log(user.displayName)
+        setDisplayName(user.displayName)
+      } else {
+        setDisplayName('')
+      }
+    });
+  }, [])
 
   return (
+    <>
+    {isLoading && <Loader />}
     <header>
       <div className={styles.header}>
         {logo}
@@ -69,8 +104,13 @@ const Header = () => {
           <div className={styles["header-right"]} onClick={hideMenu}>
             <span className={styles.links}>
               <NavLink to="/login" className={activeLink}> Login </NavLink>
+              <a href="#">
+                <FaUserCircle size={16}/>
+                Hi, {displayName}
+              </a>
               <NavLink to="/register" className={activeLink}> Register </NavLink>
               <NavLink to="/orders-history" className={activeLink}> My Orders </NavLink>
+              <NavLink to="/" onClick={logoutUser}> Log Out </NavLink>
             </span>
             {cart}
           </div>
@@ -83,6 +123,7 @@ const Header = () => {
         </div>
       </div>
     </header>
+    </>
   );
 };
 
