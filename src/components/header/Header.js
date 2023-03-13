@@ -7,6 +7,8 @@ import { auth } from "../../firebase/Config";
 import Loader from "../loader/Loader";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { toast } from "react-toastify";
+import { useDispatch } from 'react-redux';
+import { SET_ACTIVE_USER } from '../../redux/slice/authSlice';
 
 
 const logo = (
@@ -32,6 +34,8 @@ const Header = () => {
   const [showMenu, setShowMenu] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [displayName, setDisplayName] = useState('');
+  
+  const dispatch = useDispatch();
 
   const toggleMenu = () => {
     setShowMenu(!showMenu);
@@ -59,9 +63,20 @@ const Header = () => {
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        const uid = user.uid;
-        console.log(user.displayName)
+        // console.log(user);
+        // const uid = user.uid;
+        // console.log(user.displayName)
+
+        if(user.displayName == null){
+            user.displayName = user.email;
+        }
         setDisplayName(user.displayName)
+
+        dispatch(SET_ACTIVE_USER({
+          email: user.email,
+          userName: user.displayName,
+          userID: user.uid,
+        }))
       } else {
         setDisplayName('')
       }
